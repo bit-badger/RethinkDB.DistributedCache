@@ -1,0 +1,32 @@
+{
+  "buildOptions": {
+    "compile": {
+      "includeFiles": [
+        "DistributedRethinkDBCacheOptions.fs",
+        "DistributedRethinkDBCache.fs",
+        "IServiceCollectionExtensions.fs"
+      ]
+    },
+    "compilerName": "fsc",
+    "debugType": "portable"
+  },
+  "dependencies": {
+    "Microsoft.Extensions.Caching.Abstractions": "1.0.0",
+    "Microsoft.Extensions.Logging": "1.0.0",
+    "Microsoft.Extensions.Options": "1.0.0",
+    "Newtonsoft.Json": "9.0.1",
+    "RethinkDb.Driver": "2.3.15"
+  },
+  "frameworks": {
+    "netstandard1.6": {
+      "dependencies": {
+        "Microsoft.FSharp.Core.netcore": "1.0.0-alpha-160831",
+        "NETStandard.Library": "1.6.0"
+      }
+    }
+  },
+  "tools": {
+    "dotnet-compile-fsc":"1.0.0-preview2-*"
+  },
+  "version": "0.9.0"
+}
