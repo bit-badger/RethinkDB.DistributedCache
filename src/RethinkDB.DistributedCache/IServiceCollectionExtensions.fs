@@ -9,12 +9,12 @@ open System
 
 type IServiceCollection with
 
-  member this.AddDistributedRethinkDBCache(options : Action<DistributedRethinkDBCacheOptions>) =
-    match options with null -> nullArg "options" | _ -> ()
-    ignore <| this.AddOptions ()
-    ignore <| this.Configure options
-    ignore <| this.Add (ServiceDescriptor.Transient<IDistributedCache, DistributedRethinkDBCache>())
-    this
+    member this.AddDistributedRethinkDBCache (options : Action<DistributedRethinkDBCacheOptions>) =
+        if isNull options then nullArg "options"
+        this.AddOptions () |> ignore
+        this.Configure options |> ignore
+        this.Add (ServiceDescriptor.Transient<IDistributedCache, DistributedRethinkDBCache> ())
+        this
 
 /// <summary>
 /// Add RethinkDB options to the services collection
@@ -23,4 +23,4 @@ type IServiceCollection with
 /// <returns>The given <see cref="IServiceCollection" /> for further manipulation</returns>
 [<System.Runtime.CompilerServices.Extension>]
 let AddDistributedRethinkDBCache (this : IServiceCollection, options : Action<DistributedRethinkDBCacheOptions>) =
-  this.AddDistributedRethinkDBCache options
+    this.AddDistributedRethinkDBCache options

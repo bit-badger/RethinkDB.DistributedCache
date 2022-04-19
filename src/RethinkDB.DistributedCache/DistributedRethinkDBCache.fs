@@ -52,19 +52,19 @@ type DistributedRethinkDBCache (options : IOptions<DistributedRethinkDBCacheOpti
     let db = defaultArg (Option.ofObj opts.Database) ""
     
     /// The table name; default to "Cache" if not provided
-    let table = match defaultArg (Option.ofObj opts.TableName) "" with "" -> "Cache" | tbl -> tbl
+    let tbl = match defaultArg (Option.ofObj opts.TableName) "" with "" -> "Cache" | tbl -> tbl
 
     /// The name of the cache
-    let cacheName = 
+    let table = 
         seq {
             match db with "" -> () | _ -> $"{db}."
-            table
+            tbl
         }
         |> Seq.reduce (+)
 
     /// Debug message
     let dbug text =
-        if log.IsEnabled LogLevel.Debug then log.LogDebug $"[{cacheName}] %s{text ()}" 
+        if log.IsEnabled LogLevel.Debug then log.LogDebug $"[{table}] %s{text ()}" 
 
     /// Make sure the RethinkDB database, table, expiration index exist
     let checkEnvironment (_ : CancellationToken) =
@@ -84,23 +84,23 @@ type DistributedRethinkDBCache (options : IOptions<DistributedRethinkDBCacheOpti
                      do! rethink { dbCreate db; write; withRetryDefault; ignoreResult opts.Connection }
                 dbug <| fun () -> "   ...done"
             // Table
-            dbug <| fun () -> sprintf $"   Checking for table {table} existence..."
+            dbug <| fun () -> sprintf $"   Checking for table {tbl} existence..."
             let! tables = rethink<string list> { tableList db; result; withRetryDefault opts.Connection }
-            if not (tables |> List.contains table) then
-                dbug <| fun () -> sprintf $"   ...creating table {table}..."
-                do! rethink { withDb db; tableCreate table; write; withRetryDefault; ignoreResult opts.Connection }
+            if not (tables |> List.contains tbl) then
+                dbug <| fun () -> sprintf $"   ...creating table {tbl}..."
+                do! rethink { tableCreate table; write; withRetryDefault; ignoreResult opts.Connection }
             dbug <| fun () -> "   ...done"
             // Index
-            dbug <| fun () -> sprintf $"   Checking for index {table}.expiresAt..."
+            dbug <| fun () -> sprintf $"   Checking for index {tbl}.expiresAt..."
             let! indexes = rethink<string list> {
-                withDb db; withTable table
+                withTable table
                 indexList
                 result; withRetryDefault opts.Connection
             }
             if not (indexes |> List.contains "expiresAt") then
-                dbug <| fun () -> sprintf $"   ...creating index expiresAt on table {table}..."
+                dbug <| fun () -> sprintf $"   ...creating index expiresAt on table {tbl}..."
                 do! rethink {
-                    withDb db; withTable table
+                    withTable table
                     indexCreate "expiresAt"
                     write; withRetryDefault; ignoreResult opts.Connection
                 }
@@ -115,7 +115,7 @@ type DistributedRethinkDBCache (options : IOptions<DistributedRethinkDBCacheOpti
             let tix = DateTime.UtcNow.Ticks - 1L
             dbug <| fun () -> $"Purging expired entries (<= %i{tix})"
             do! rethink {
-                withDb db; withTable table
+                withTable table
                 between (r.Minval ()) tix [ BetweenOptArg.Index "expiresAt" ]
                 delete
                 write; withRetryDefault; ignoreResult opts.Connection
@@ -128,7 +128,7 @@ type DistributedRethinkDBCache (options : IOptions<DistributedRethinkDBCacheOpti
     /// Get the cache entry specified
     let getCacheEntry (key : string) (_ : CancellationToken) =
         rethink<CacheEntry> {
-            withDb db; withTable table
+            withTable table
             get key
             resultOption; withRetryDefault opts.Connection
         }
@@ -138,7 +138,7 @@ type DistributedRethinkDBCache (options : IOptions<DistributedRethinkDBCacheOpti
         backgroundTask {
             if entry.slidingExpiration > 0 then
                 do! rethink {
-                    withDb db; withTable table
+                    withTable table
                     get entry.id
                     update [ "expiresAt", ticksFromNow entry.slidingExpiration :> obj ]
                     write; withRetryDefault; ignoreResult opts.Connection
@@ -177,7 +177,7 @@ type DistributedRethinkDBCache (options : IOptions<DistributedRethinkDBCacheOpti
             cnxToken.ThrowIfCancellationRequested ()
             do! checkEnvironment cnxToken
             do! rethink {
-                withDb db; withTable table
+                withTable table
                 get key
                 delete
                 write; withRetryDefault; ignoreResult opts.Connection
@@ -208,21 +208,14 @@ type DistributedRethinkDBCache (options : IOptions<DistributedRethinkDBCacheOpti
                   slidingExpiration  = 0
                 }
                 |> addExpiration
-            match! getCacheEntry key cnxToken with
-            | None ->
-                do! rethink {
-                    withDb db; withTable table
-                    insert entry
-                    write; withRetryDefault; ignoreResult opts.Connection
-                }
-            | Some _ ->
-                do! rethink {
-                    withDb db; withTable table
-                    get key
-                    replace entry
-                    write; withRetryDefault; ignoreResult opts.Connection
-                }
+            do! rethink {
+                withTable table
+                replace entry
+                write; withRetryDefault; ignoreResult opts.Connection
+            }
         }
+    
+    /// Execute a task synchronously
     let runSync (task : CancellationToken -> Task<'T>) =
         task CancellationToken.None |> (Async.AwaitTask >> Async.RunSynchronously)
     

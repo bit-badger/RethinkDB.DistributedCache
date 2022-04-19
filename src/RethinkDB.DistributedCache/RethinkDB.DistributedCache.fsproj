@@ -3,13 +3,25 @@
     <PropertyGroup>
         <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <VersionPrefix>0.9.0</VersionPrefix>
+        <VersionSuffix>alpha02</VersionSuffix>
+        <Authors>danieljsummers</Authors>
+        <PackageProjectUrl>https://github.com/danieljsummers/RethinkDB.DistributedCache</PackageProjectUrl>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <RepositoryUrl>https://github.com/danieljsummers/RethinkDB.DistributedCache</RepositoryUrl>
+        <RepositoryType>Git</RepositoryType>
+        <Copyright>MIT License</Copyright>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageTags>RethinkDB IDistributedCache ASP.NET Core</PackageTags>
+        <Description>An IDistributedCache implementation utilizing RethinkDB for storage</Description>
+        <PackageReleaseNotes>Updated to .NET 6</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="6.0.0" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="*" />
         <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
-        <PackageReference Include="RethinkDb.Driver.FSharp" Version="0.8.0-alpha-0002" />
+        <PackageReference Include="RethinkDb.Driver.FSharp" Version="0.8.0-alpha-0003" />
     </ItemGroup>
 
     <ItemGroup>
