@@ -67,11 +67,8 @@ type DistributedRethinkDBCache (options : IOptions<DistributedRethinkDBCacheOpti
         if log.IsEnabled LogLevel.Debug then log.LogDebug $"[{table}] %s{text ()}" 
 
     /// Make sure the RethinkDB database, table, expiration index exist
-    let checkEnvironment (_ : CancellationToken) =
+    let environmentCheck (_ : CancellationToken) =
         backgroundTask {
-            if environmentChecked then
-                dbug <| fun () -> "Skipping environment check because it has already been performed"
-                return ()
             dbug <| fun () -> "|> Checking for proper RethinkDB cache environment"
             // Database
             match db with
@@ -109,6 +106,14 @@ type DistributedRethinkDBCache (options : IOptions<DistributedRethinkDBCacheOpti
             environmentChecked <- true
         }
 
+    /// Make sure the RethinkDB database, table, expiration index exist
+    let checkEnvironment (cnxToken : CancellationToken) =
+        backgroundTask {
+            match environmentChecked with
+            | true -> dbug <| fun () -> "Skipping environment check because it has already been performed"
+            | false -> do! environmentCheck cnxToken
+        }
+    
     /// Remove entries from the cache that are expired
     let purgeExpired (_ : CancellationToken) =
         backgroundTask {
