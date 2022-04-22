@@ -13,8 +13,8 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageTags>RethinkDB IDistributedCache ASP.NET Core</PackageTags>
         <Description>An IDistributedCache implementation utilizing RethinkDB for storage</Description>
-        <VersionSuffix>alpha04</VersionSuffix>
-        <PackageReleaseNotes>Work toward starting a new session when encountering an expired one</PackageReleaseNotes>
+        <VersionSuffix>alpha05</VersionSuffix>
+        <PackageReleaseNotes>Provider now stores successfully; do not use an earlier version</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>

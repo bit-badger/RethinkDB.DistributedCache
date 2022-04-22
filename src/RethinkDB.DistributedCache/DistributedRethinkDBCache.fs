@@ -1,7 +1,6 @@
 namespace RethinkDB.DistributedCache
 
 open System
-open System.Text
 open System.Threading
 open System.Threading.Tasks
 open Microsoft.Extensions.Caching.Distributed
@@ -49,34 +48,34 @@ type DistributedRethinkDBCache (options : IOptions<DistributedRethinkDBCacheOpti
     /// Get the payload for the cache entry
     let getEntry key cancelToken = backgroundTask {
         do! checkEnvironment cancelToken
-        let! result = Cache.Entry.get opts key cancelToken
-        do! purgeExpired     cancelToken
+        let! result = Cache.Entry.get opts log key cancelToken
+        do! purgeExpired cancelToken
         match result with
         | None ->
             debug <| fun () -> $"Cache key {key} not found"
             return null
         | Some entry ->
             debug <| fun () -> $"Cache key {key} found"
-            return UTF8Encoding.UTF8.GetBytes entry.payload
+            return Convert.FromBase64String entry.payload
     }
   
     /// Update the sliding expiration for a cache entry
     let refreshEntry key cancelToken = backgroundTask {
         do! checkEnvironment cancelToken
-        let! _ = Cache.Entry.get opts key cancelToken
+        let! _ = Cache.Entry.get opts log key cancelToken
         do! purgeExpired cancelToken
     }
   
     /// Remove the specified cache entry
     let removeEntry key cancelToken = backgroundTask {
         do! checkEnvironment cancelToken
-        do! Cache.Entry.remove opts key cancelToken
+        do! Cache.Entry.remove opts log key cancelToken
         do! purgeExpired cancelToken
     }
   
     /// Set the value of a cache entry
     let setEntry key payload options cancelToken = backgroundTask {
-        do! Cache.Entry.set opts options key payload cancelToken
+        do! Cache.Entry.set opts log options key payload cancelToken
         do! purgeExpired cancelToken
     }
     
@@ -85,11 +84,11 @@ type DistributedRethinkDBCache (options : IOptions<DistributedRethinkDBCacheOpti
         task CancellationToken.None |> (Async.AwaitTask >> Async.RunSynchronously)
     
     interface IDistributedCache with
-        member this.Get key = getEntry key |> runSync
-        member this.GetAsync (key, cancelToken) = getEntry key cancelToken
-        member this.Refresh key = refreshEntry key |> runSync
-        member this.RefreshAsync (key, cancelToken) = refreshEntry key cancelToken
-        member this.Remove key = removeEntry key |> runSync
-        member this.RemoveAsync (key, cancelToken) = removeEntry key cancelToken
-        member this.Set (key, value, options) = setEntry key value options |> runSync
-        member this.SetAsync (key, value, options, cancelToken) = setEntry key value options cancelToken
+        member _.Get key = getEntry key |> runSync
+        member _.GetAsync (key, cancelToken) = getEntry key cancelToken
+        member _.Refresh key = refreshEntry key |> runSync
+        member _.RefreshAsync (key, cancelToken) = refreshEntry key cancelToken
+        member _.Remove key = removeEntry key |> runSync
+        member _.RemoveAsync (key, cancelToken) = removeEntry key cancelToken
+        member _.Set (key, value, options) = setEntry key value options |> runSync
+        member _.SetAsync (key, value, options, cancelToken) = setEntry key value options cancelToken
