@@ -13,7 +13,7 @@ type IServiceCollection with
         if isNull options then nullArg "options"
         this.AddOptions () |> ignore
         this.Configure options |> ignore
-        this.Add (ServiceDescriptor.Transient<IDistributedCache, DistributedRethinkDBCache> ())
+        this.Add (ServiceDescriptor.Singleton<IDistributedCache, DistributedRethinkDBCache> ())
         this
 
 /// <summary>
