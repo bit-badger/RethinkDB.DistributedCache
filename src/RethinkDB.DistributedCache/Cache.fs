@@ -79,7 +79,6 @@ module Entry =
     
     open System.Text
     open Microsoft.Extensions.Caching.Distributed
-    open RethinkDb.Driver.Ast
     open RethinkDb.Driver.Model
     
     /// RethinkDB
@@ -106,28 +105,30 @@ module Entry =
     let get cacheOpts (key : string) (cancelToken : CancellationToken) = backgroundTask {
         let table = table cacheOpts
         let now   = ticksFromNow 0
-        let filters : (ReqlExpr -> obj) list = [
-            fun row -> row.G(expiresAt).Gt now
-            fun row -> row.G(slidingExp).Gt 0
-            fun row -> row.G(absoluteExp).Gt(0).Or(row.G(absoluteExp).Ne(row.G expiresAt))
-        ]
-        let expiration (row : ReqlExpr) : obj =
-            r.HashMap(
-                expiresAt, 
-                r.Branch(row.G(expiresAt).Add(row.G(slidingExp)).Gt(row.G(absoluteExp)), row.G(absoluteExp),
-                         row.G(slidingExp).Add(now)))
         let! result = rethink<Result> {
             withTable table
             get key
-            filter filters
-            update expiration [ ReturnChanges All ]
+            update (fun row ->
+                r.HashMap(
+                    expiresAt,
+                    r.Branch(
+                        // If we have neither sliding nor absolute expiration, do not change the expiry time
+                        row.G(slidingExp).Le(0).Or(row.G(absoluteExp).Le(0)).Or(row.G(absoluteExp).Eq(row.G(expiresAt))),
+                        row.G(expiresAt),
+                        // If the sliding expiry increment exceeds the absolute expiry, use the absolute
+                        row.G(expiresAt).Add(row.G(slidingExp)).Gt(row.G(absoluteExp)),
+                        row.G(absoluteExp),
+                        // Else adjust for the sliding expiry increment
+                        row.G(slidingExp).Add(now))) :> obj) [ ReturnChanges All ]
             write cancelToken; withRetryDefault cacheOpts.Connection
         }
         match result.Changes.Count with
         | 0 -> return None
         | _ ->
-            match result.ChangesAs<CacheEntry>().[0].NewValue with
-            | entry when entry.expiresAt > now -> return Some entry
+            match (box >> Option.ofObj) (result.ChangesAs<CacheEntry>().[0].NewValue) with
+            | Some boxedEntry ->
+                let entry = unbox boxedEntry
+                return if entry.expiresAt > now then Some entry else None
             | _ -> return None
     }
     
