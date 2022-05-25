@@ -10,5 +10,5 @@ For a slightly longer read, see [the full library documentation][proj].
 
 [pkg-img]: https://img.shields.io/nuget/vpre/RethinkDB.DistributedCache
 [pkg-url]: https://www.nuget.org/packages/RethinkDB.DistributedCache/
-[lib]: ./tree/main/src/RethinkDB.DistributedCache/README.md
+[lib]: https://github.com/bit-badger/RethinkDB.DistributedCache/blob/main/src/RethinkDB.DistributedCache/README.md
 [proj]: https://bitbadger.solutions/open-source/rethinkdb-distributedcache/
