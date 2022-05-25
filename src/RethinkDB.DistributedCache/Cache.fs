@@ -103,7 +103,7 @@ module Entry =
     let get cacheOpts log (key : string) (cancelToken : CancellationToken) = backgroundTask {
         let table = table cacheOpts
         let debug = debug cacheOpts log
-        debug <| fun () -> $"Retriving cache entry {key}"
+        debug <| fun () -> $"Retrieving cache entry {key}"
         match! rethink<CacheEntry> {
             withTable table
             get key

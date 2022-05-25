@@ -2,27 +2,29 @@
 
     <PropertyGroup>
         <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
+        <Description>An IDistributedCache implementation utilizing RethinkDB for storage</Description>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <VersionPrefix>0.9.0</VersionPrefix>
-        <Authors>danieljsummers</Authors>
-        <PackageProjectUrl>https://github.com/danieljsummers/RethinkDB.DistributedCache</PackageProjectUrl>
+        <Authors>Daniel J. Summers,Bit Badger Solutions</Authors>
+        <RepositoryUrl>https://github.com/bit-badger/RethinkDB.DistributedCache</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageProjectUrl>https://bitbadger.solutions/open-source/rethinkdb-distributedcache/</PackageProjectUrl>
+        <PackageIcon>logo.png</PackageIcon>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-        <RepositoryUrl>https://github.com/danieljsummers/RethinkDB.DistributedCache</RepositoryUrl>
-        <RepositoryType>Git</RepositoryType>
         <Copyright>MIT License</Copyright>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <PackageTags>RethinkDB IDistributedCache ASP.NET Core</PackageTags>
-        <Description>An IDistributedCache implementation utilizing RethinkDB for storage</Description>
-        <VersionSuffix>alpha05</VersionSuffix>
-        <PackageReleaseNotes>Provider now stores successfully; do not use an earlier version</PackageReleaseNotes>
+        <PackageTags>RethinkDB IDistributedCache aspnetcore</PackageTags>
+        <VersionPrefix>1.0.0</VersionPrefix>
+        <VersionSuffix>rc1</VersionSuffix>
+        <PackageReleaseNotes>Release Candidate; repackaged with more stable underlying driver and documentation</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="6.0.0" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="*" />
         <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
-        <PackageReference Include="RethinkDb.Driver.FSharp" Version="0.8.0-alpha-0007" />
-        <PackageReference Update="FSharp.Core" Version="6.0.3" />
+        <PackageReference Include="RethinkDb.Driver.FSharp" Version="0.9.0-beta-03" />
+        <PackageReference Update="FSharp.Core" Version="6.0.4" />
     </ItemGroup>
 
     <ItemGroup>
@@ -31,6 +33,8 @@
         <Compile Include="Cache.fs" />
         <Compile Include="DistributedRethinkDBCache.fs" />
         <Compile Include="IServiceCollectionExtensions.fs" />
+        <None Include="README.md" Pack="true" PackagePath="\" />
+        <None Include="logo.png" Pack="true" PackagePath="\" />
     </ItemGroup>
 
 </Project>
